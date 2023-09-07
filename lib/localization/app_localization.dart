@@ -160,6 +160,19 @@ class AppLocalization {
       'label_empty_field': "can't be empty",
       'label_pick_a_location': 'Pick a location on the map',
       'label_save_button': 'SAVE ADDRESS',
+      'mapbox_app_bar_title': 'Pick an address',
+      'title_current_location': 'Your current location',
+      'title_chosen_location': 'Your chosen location',
+      'label_choose_current_location': 'Choose current location',
+      'location_not_chosen': 'You have not choose a location',
+      'label_choose_as_delivery_address': 'Choose as your delivery address',
+      'alert_box_title_choose_as_delivery_address':
+          'Choose this address as your deliver address?',
+      'label_search_for_address': 'Search for an address...',
+      'alert_box_title_address_not_chosen': 'You have not chosen an address',
+      'hint_text_address_search': 'Search for an address...',
+
+      'label_move_to_current_location': 'Move to your current location',
 
       ///ADD PAYMENT
       'add_payment_app_bar_title': 'Add payment method',
@@ -322,6 +335,18 @@ class AppLocalization {
       'label_empty_field': "không thể trống",
       'label_pick_a_location': 'Chọn vị trí trên bản đồ',
       'label_save_button': 'LƯU ĐỊA CHỈ',
+      'mapbox_app_bar_title': 'Chọn một địa chỉ',
+      'title_current_location': 'Vị trí hiện tại',
+      'title_chosen_location': 'Vị trí đã chọn',
+      'label_choose_current_location': 'Chọn vị trí hiện tại',
+      'location_not_chosen': 'Bạn chưa chọn địa chỉ',
+      'label_choose_as_delivery_address': 'Chọn làm địa chỉ giao hàng',
+      'alert_box_title_choose_as_delivery_address':
+          'Chọn địa chỉ này làm địa chỉ giao hàng?',
+      'title_move_to_current_location': 'Di chuyển đến vị trí hiện tại của bạn',
+      'label_search_for_address': 'Tìm một địa chỉ...',
+      'alert_box_title_address_not_chosen': 'Bạn chưa chọn địa chỉ giao hàng',
+      'hint_text_address_search': 'Tìm kiếm một địa chỉ...',
 
       ///ADD PAYMENT
       'add_payment_app_bar_title': 'Thêm phương thức thanh toán',
