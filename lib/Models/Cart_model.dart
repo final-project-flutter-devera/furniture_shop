@@ -205,7 +205,9 @@ class CartModel extends StatelessWidget {
                                               )
                                             : IconButton(
                                                 onPressed: () {
-                                                  context.read<Cart>().decrementByOne(product);
+                                                  context
+                                                      .read<Cart>()
+                                                      .decrementByOne(product);
                                                 },
                                                 icon: const Icon(
                                                   Icons.remove,
@@ -240,7 +242,9 @@ class CartModel extends StatelessWidget {
                                                   product.availableQuantity
                                               ? null
                                               : () {
-                                                  context.read<Cart>().increment(product);
+                                                  context
+                                                      .read<Cart>()
+                                                      .increment(product);
                                                 },
                                           icon: const Icon(
                                             Icons.add,

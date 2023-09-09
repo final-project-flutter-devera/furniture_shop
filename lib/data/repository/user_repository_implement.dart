@@ -35,6 +35,15 @@ class UserRepositoryImpl implements UserRepository {
       List<Address>? shippingAddresses,
       List<String>? follower,
       bool? isDeleted}) {
-    return updateUser(userID);
+    return _userFirestoreService.updateUser(userID,
+        role: role,
+        name: name,
+        emailAddres: emailAddres,
+        phoneNumber: phoneNumber,
+        avatar: avatar,
+        follower: follower,
+        following: following,
+        shippingAddresses: shippingAddresses,
+        isDeleted: isDeleted);
   }
 }

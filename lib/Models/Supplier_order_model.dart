@@ -242,7 +242,8 @@ class SupplierOrderModel extends StatelessWidget {
                                       onPressed: () {
                                         var today = DateTime.now();
                                         DatePicker.showDatePicker(context,
-                                            minTime: today.subtract(Duration(days: 1)) ,
+                                            minTime: today
+                                                .subtract(Duration(days: 1)),
                                             maxTime: DateTime.now().add(
                                               const Duration(days: 2),
                                             ), onConfirm: (date) async {

@@ -5,11 +5,11 @@ class User {
   final List<String> role; // Can have multiple role?
   String name;
   String? emailAddress;
-  String phoneNumber;
+  String? phoneNumber;
   String? avatar;
-  List<String> following = [];
-  List<String> follower = [];
-  List<Address> shippingAddresses;
+  List<String>? following;
+  List<String>? follower;
+  List<Address> shippingAddress;
   bool isDeleted;
 
   User(
@@ -20,9 +20,9 @@ class User {
       this.phoneNumber = '',
       this.avatar,
       this.isDeleted = false,
-      this.following = const [],
-      this.follower = const [],
-      this.shippingAddresses = const []});
+      this.following,
+      this.follower,
+      this.shippingAddress = const []});
 
   Map<String, dynamic> toJson() {
     return {
@@ -36,7 +36,7 @@ class User {
       'follower': follower,
       'isDeleted': isDeleted,
       //TODO: TO JSON FOR SHIPPING ADDRESS
-      'shippingAddresses': shippingAddresses.map(
+      'shippingAddress': shippingAddress.map(
         (e) => e.toJson(),
       )
     };
@@ -44,16 +44,16 @@ class User {
 
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
-      id: json['id'] as String,
-      role: json['role'] as List<String>,
-      name: json['name'] as String,
-      emailAddress: json['emailAddress'] as String?,
-      phoneNumber: json['phoneNumber'] as String,
-      avatar: json['avatar'] as String?,
-      follower: json['follower'] as List<String>,
-      following: json['following'] as List<String>,
-      isDeleted: json['isDeleted'] as bool,
-      shippingAddresses: (json['shippingAddresses'] as List<dynamic>)
+      id: json['id'],
+      role: (json['role'] as List).map((e) => e as String).toList(),
+      name: json['name'],
+      emailAddress: json['emailAddress'],
+      phoneNumber: json['phoneNumber'],
+      avatar: json['avatar'],
+      follower: (json['follower'] as List?)?.map((e) => e as String).toList(),
+      following: (json['following'] as List?)?.map((e) => e as String).toList(),
+      isDeleted: json['isDeleted'],
+      shippingAddress: (json['shippingAddress'] as List<dynamic>)
           .map((e) => Address.fromJson(e))
           .toList(),
     );

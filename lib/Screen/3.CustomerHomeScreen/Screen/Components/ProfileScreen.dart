@@ -125,9 +125,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 : CircleAvatar(
                                     backgroundColor: AppColor.white,
                                     radius: 40,
-                                    backgroundImage: NetworkImage(
-                                      data['profileimage'],
-                                    ),
+                                    child: data['avatar'] ??
+                                        Text(
+                                          (() {
+                                            final _initials = (data['name']
+                                                    as String)
+                                                .split(' ')
+                                                .reduce((value, element) =>
+                                                    value[0] +
+                                                    element[0].toUpperCase());
+                                            return _initials.substring(
+                                                _initials.length - 2);
+                                          })(),
+                                          style: TextStyle(
+                                              color: AppColor.black,
+                                              fontSize: 40),
+                                        ),
                                   ),
                           ),
                           const SizedBox(

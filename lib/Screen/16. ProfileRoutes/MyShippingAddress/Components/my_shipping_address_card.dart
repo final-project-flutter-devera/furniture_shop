@@ -2,18 +2,39 @@ import 'package:flutter/material.dart';
 import 'package:furniture_shop/Constants/Colors.dart';
 import 'package:furniture_shop/Constants/style.dart';
 import 'package:furniture_shop/Objects/address.dart';
+import 'package:furniture_shop/Providers/user_provider.dart';
+import 'package:furniture_shop/Screen/16.%20ProfileRoutes/MyShippingAddress/edit_shipping_address.dart';
+import 'package:furniture_shop/Widgets/delete_alert_dialog.dart';
 import 'package:furniture_shop/localization/app_localization.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 
-class MyShippingAddressCard extends StatelessWidget {
-  final bool isMainAddress = false;
-  final Address address = Address(
-      name: 'My name',
-      street: 'My Street',
-      city: 'My City',
-      state: 'My State',
-      zipCode: 'My ZipCode',
-      country: 'My Country');
+class MyShippingAddressCard extends StatefulWidget {
+  final Address address;
+  final int index;
+  final ValueChanged<int> setAsDefaultOnTap;
+  final ValueChanged<int> deleteAddressOnTap;
+  final ValueChanged<Address> editAddressOnTap;
+
+  MyShippingAddressCard(
+      {super.key,
+      required this.index,
+      required this.address,
+      required this.setAsDefaultOnTap,
+      required this.deleteAddressOnTap,
+      required this.editAddressOnTap});
+  @override
+  State<MyShippingAddressCard> createState() => _MyShippingAddressCardState();
+}
+
+class _MyShippingAddressCardState extends State<MyShippingAddressCard> {
+  late bool isDefault;
+  @override
+  void initState() {
+    isDefault = widget.address.isDefault!;
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -22,7 +43,13 @@ class MyShippingAddressCard extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Checkbox(value: isMainAddress, onChanged: ((value) => {})),
+            Checkbox(
+                value: widget.address.isDefault,
+                activeColor: AppColor.black,
+                onChanged: ((value) => setState(() {
+                      widget.setAsDefaultOnTap.call(widget.index);
+                      isDefault = !isDefault;
+                    }))),
             Text(
               context.localize('use_address'),
               style:
@@ -40,18 +67,58 @@ class MyShippingAddressCard extends StatelessWidget {
                   padding: const EdgeInsets.only(top: 15, left: 20, right: 15),
                   child: Row(children: [
                     Text(
-                      "User Name",
+                      widget.address.name,
                       style: GoogleFonts.nunitoSans(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                           color: AppColor.black),
                     ),
                     const Spacer(),
-                    Icon(
-                      Icons.edit,
-                      color: AppColor.black,
-                      size: 24,
-                    )
+                    IconButton(
+                      padding: EdgeInsets.zero,
+                      constraints: BoxConstraints(),
+                      onPressed: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => EditShippingAddress(
+                                  address: widget.address,
+                                  onTap: (Address newAddress) {
+                                    widget.editAddressOnTap.call(newAddress);
+                                  }),
+                            ));
+                      },
+                      icon: Icon(
+                        Icons.edit,
+                        color: AppColor.black,
+                        size: 24,
+                      ),
+                    ),
+                    const Padding(padding: EdgeInsets.only(left: 20)),
+                    IconButton(
+                      padding: EdgeInsets.zero,
+                      constraints: BoxConstraints(),
+                      onPressed: () {
+                        DeleteAlertDialog.showAlertDialog(
+                          context: context,
+                          title: context
+                              .localize('alert_box_title_delete_address'),
+                          content:
+                              '${widget.address.street}, ${widget.address.city}, ${widget.address.zipCode}, ${widget.address.state}, ${widget.address.country}',
+                          onNoPressed: () {
+                            Navigator.pop(context);
+                          },
+                          onYesPressed: () {
+                            widget.deleteAddressOnTap.call(widget.index);
+                          },
+                        );
+                      },
+                      icon: Icon(
+                        Icons.delete,
+                        color: AppColor.black,
+                        size: 24,
+                      ),
+                    ),
                   ]),
                 ),
                 const Padding(
@@ -65,7 +132,7 @@ class MyShippingAddressCard extends StatelessWidget {
                   padding:
                       const EdgeInsets.only(left: 20, right: 20, bottom: 15),
                   child: Text(
-                    '${address.street}, ${address.city}, ${address.zipCode}, ${address.state}, ${address.country}',
+                    '${widget.address.street}, ${widget.address.city}, ${widget.address.zipCode}, ${widget.address.state}, ${widget.address.country}',
                     textAlign: TextAlign.justify,
                     style: GoogleFonts.nunitoSans(
                         color: AppColor.text_secondary, fontSize: 14),

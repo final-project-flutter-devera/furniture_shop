@@ -3,18 +3,27 @@ import 'package:furniture_shop/Constants/Colors.dart';
 import 'package:furniture_shop/localization/app_localization.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class AppTextField extends StatefulWidget {
+class AppTextFormField extends StatefulWidget {
   final String labelText;
   final String hintText;
-  AppTextField({super.key, required this.labelText, required this.hintText});
+  final bool isNumber;
+  final TextEditingController controller;
+  AppTextFormField(
+      {super.key,
+      required this.labelText,
+      required this.hintText,
+      required this.controller,
+      required this.isNumber});
   @override
-  State<AppTextField> createState() => _AppTextFieldState();
+  State<AppTextFormField> createState() => _AppTextFormFieldState();
 }
 
-class _AppTextFieldState extends State<AppTextField> {
+class _AppTextFormFieldState extends State<AppTextFormField> {
   @override
   Widget build(BuildContext context) {
     return TextFormField(
+      keyboardType: widget.isNumber ? TextInputType.number : null,
+      controller: widget.controller,
       validator: (String? value) {
         if (value == null || value.isEmpty) {
           return '${widget.labelText} ${context.localize('label_empty_field')}';

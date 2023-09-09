@@ -58,10 +58,8 @@ class FavoritesModel extends StatelessWidget {
                           SizedBox(
                             height: 80,
                             child: Column(
-                              crossAxisAlignment:
-                              CrossAxisAlignment.start,
-                              mainAxisAlignment:
-                              MainAxisAlignment.spaceBetween,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Row(
                                   children: [
@@ -87,8 +85,7 @@ class FavoritesModel extends StatelessWidget {
                       Align(
                         alignment: Alignment.topRight,
                         child: Column(
-                          mainAxisAlignment:
-                          MainAxisAlignment.spaceBetween,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             IconButton(
                               onPressed: () {
@@ -100,7 +97,9 @@ class FavoritesModel extends StatelessWidget {
                                     Navigator.pop(context);
                                   },
                                   tabYes: () {
-                                    context.read<Favorites>().removeProduct(product);
+                                    context
+                                        .read<Favorites>()
+                                        .removeProduct(product);
                                     Navigator.pop(context);
                                   },
                                 );
@@ -110,31 +109,30 @@ class FavoritesModel extends StatelessWidget {
                                 size: 20,
                               ),
                             ),
-                            context
-                                .watch<Cart>()
-                                .getItems
-                                .firstWhereOrNull((element) =>
-                            element.documentID ==
-                                product.documentID) !=
-                                null || product.availableQuantity == 0
+                            context.watch<Cart>().getItems.firstWhereOrNull(
+                                            (element) =>
+                                                element.documentID ==
+                                                product.documentID) !=
+                                        null ||
+                                    product.availableQuantity == 0
                                 ? const SizedBox()
                                 : IconButton(
-                              onPressed: () {
-                                context.read<Cart>().addItems(
-                                  product.name,
-                                  product.price,
-                                  1,
-                                  product.availableQuantity,
-                                  product.imageList,
-                                  product.documentID,
-                                  product.supplierID,
-                                );
-                              },
-                              icon: const Icon(
-                                Icons.local_mall,
-                                size: 20,
-                              ),
-                            ),
+                                    onPressed: () {
+                                      context.read<Cart>().addItems(
+                                            product.name,
+                                            product.price,
+                                            1,
+                                            product.availableQuantity,
+                                            product.imageList,
+                                            product.documentID,
+                                            product.supplierID,
+                                          );
+                                    },
+                                    icon: const Icon(
+                                      Icons.local_mall,
+                                      size: 20,
+                                    ),
+                                  ),
                           ],
                         ),
                       ),

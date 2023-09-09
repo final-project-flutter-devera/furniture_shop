@@ -29,10 +29,9 @@ class UserFirestoreService implements UserDataService {
   @override
   Future<User> getUser(String userID) async {
     User? user;
-    await users.where('userID', isEqualTo: userID).get().then((querySnapshot) {
-      debugPrint('Get user successfully');
-      user =
-          User.fromJson(querySnapshot.docs[0].data() as Map<String, dynamic>);
+    await users.doc(userID).get().then((querySnapshot) {
+      debugPrint('Get user $userID successfully');
+      user = User.fromJson(querySnapshot.data() as Map<String, dynamic>);
     });
     return Future.value(user);
   }

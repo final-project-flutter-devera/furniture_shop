@@ -10,16 +10,18 @@ import 'package:furniture_shop/Widgets/default_app_bar.dart';
 import 'package:furniture_shop/localization/app_localization.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class AddShipingAddress extends StatefulWidget {
+class EditShippingAddress extends StatefulWidget {
+  final Address address;
+
   final ValueChanged<Address> onTap;
 
-  AddShipingAddress({super.key, required this.onTap});
+  EditShippingAddress({super.key, required this.address, required this.onTap});
 
   @override
-  State<AddShipingAddress> createState() => _AddShippingAddressState();
+  State<EditShippingAddress> createState() => _EditShippingAddressState();
 }
 
-class _AddShippingAddressState extends State<AddShipingAddress> {
+class _EditShippingAddressState extends State<EditShippingAddress> {
   String? countryValue = '';
   String? stateValue = '';
   String? cityValue = '';
@@ -31,12 +33,23 @@ class _AddShippingAddressState extends State<AddShipingAddress> {
   final TextEditingController zipcodeController = TextEditingController();
 
   @override
+  void initState() {
+    countryValue = widget.address.country;
+    stateValue = widget.address.state;
+    cityValue = widget.address.city;
+    nameController.text = widget.address.name;
+    streetController.text = widget.address.street;
+    zipcodeController.text = widget.address.zipCode;
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: DefaultAppBar(
           context: context,
-          title: context.localize('add_shipping_address_app_bar_title')),
+          title: context.localize('app_bar_title_edit_shipping_address')),
       body: Form(
         key: _formKey,
         child: Column(children: [
@@ -78,6 +91,9 @@ class _AddShippingAddressState extends State<AddShipingAddress> {
               showCities: true,
               showStates: true,
               flagState: CountryFlag.DISABLE,
+              currentCountry: countryValue,
+              currentCity: cityValue,
+              currentState: stateValue,
               countrySearchPlaceholder: context.localize('label_country'),
               stateSearchPlaceholder: context.localize('label_city'),
               citySearchPlaceholder: context.localize('label_district'),
@@ -150,6 +166,7 @@ class _AddShippingAddressState extends State<AddShipingAddress> {
                         state: stateValue!,
                         zipCode: zipcodeController.text,
                         country: countryValue!,
+                        isDefault: widget.address.isDefault,
                       );
                       widget.onTap.call(newAddress);
                       Navigator.pop(context);

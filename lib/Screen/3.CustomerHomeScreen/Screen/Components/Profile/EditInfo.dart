@@ -153,7 +153,20 @@ class _EditInfoState extends State<EditInfo> {
                         child: CircleAvatar(
                           radius: 55,
                           backgroundColor: AppColor.white,
-                          backgroundImage: NetworkImage(widget.data['profileimage']),
+                          child: widget.data['avatar'] ??
+                              Text(
+                                (() {
+                                  final _initials = (widget.data['name']
+                                          as String)
+                                      .split(' ')
+                                      .reduce((value, element) =>
+                                          value[0] + element[0].toUpperCase());
+                                  return _initials
+                                      .substring(_initials.length - 2);
+                                })(),
+                                style: TextStyle(
+                                    color: AppColor.black, fontSize: 40),
+                              ),
                         ),
                       ),
                       Icon(Icons.arrow_forward),

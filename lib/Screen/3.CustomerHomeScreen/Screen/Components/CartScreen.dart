@@ -5,9 +5,9 @@ import 'package:furniture_shop/Constants/Colors.dart';
 import 'package:furniture_shop/Providers/Cart_Provider.dart';
 import 'package:furniture_shop/Widgets/AppBarButton.dart';
 import 'package:furniture_shop/Widgets/AppBarTitle.dart';
+import 'package:furniture_shop/Widgets/ShowAlertDialog.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../Models/Cart_model.dart';
-import '../../../../Widgets/ShowAlertDialog.dart';
 import '../../../2. Login - Signup/Login.dart';
 import '../../../8.CheckOut/Check_Out_Screen.dart';
 import '../CustomerHomeScreen.dart';
@@ -60,53 +60,57 @@ class _CartScreenState extends State<CartScreen> {
       body: context.watch<Cart>().getItems.isNotEmpty
           ? const CartProduct()
           : CartProductEmpty(wMQ: wMQ),
-      bottomSheet: total == 0.0 ? null :  Padding(
-        padding: const EdgeInsets.all(20),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'Total:',
-              style: GoogleFonts.nunito(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w700,
-                  color: AppColor.black),
-            ),
-            Text(
-              '\$ ${total.toStringAsFixed(2)}',
-              style: GoogleFonts.nunito(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w700,
-                  color: AppColor.black),
-            ),
-          ],
-        ),
-      ),
-      extendBody: true,
-      bottomNavigationBar: total == 0.0 ? null : Padding(
-        padding: const EdgeInsets.only(left: 40, right: 40, bottom: 20),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(20),
-          child: MaterialButton(
-            height: 60,
-            color: AppColor.black,
-            onPressed: () {
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => CheckOutScreen()));
-            },
-            child: Text(
-              'Check Out',
-              style: GoogleFonts.nunito(
-                fontSize: 24,
-                fontWeight: FontWeight.w600,
-                color: AppColor.white,
+      bottomSheet: total == 0.0
+          ? null
+          : Padding(
+              padding: const EdgeInsets.all(20),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Total:',
+                    style: GoogleFonts.nunito(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w700,
+                        color: AppColor.black),
+                  ),
+                  Text(
+                    '\$ ${total.toStringAsFixed(2)}',
+                    style: GoogleFonts.nunito(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w700,
+                        color: AppColor.black),
+                  ),
+                ],
               ),
             ),
-          ),
-        ),
-      ),
+      extendBody: true,
+      bottomNavigationBar: total == 0.0
+          ? null
+          : Padding(
+              padding: const EdgeInsets.only(left: 40, right: 40, bottom: 20),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(20),
+                child: MaterialButton(
+                  height: 60,
+                  color: AppColor.black,
+                  onPressed: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => CheckOutScreen()));
+                  },
+                  child: Text(
+                    'Check Out',
+                    style: GoogleFonts.nunito(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w600,
+                      color: AppColor.white,
+                    ),
+                  ),
+                ),
+              ),
+            ),
     );
   }
 }

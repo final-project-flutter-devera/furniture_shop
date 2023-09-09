@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:furniture_shop/Objects/user.dart' as user;
 import 'package:furniture_shop/Providers/Auth_reponse.dart';
 import 'package:furniture_shop/Widgets/CheckValidation.dart';
 import 'package:furniture_shop/Widgets/MyMessageHandler.dart';
@@ -40,17 +41,13 @@ class _SignupState extends State<Signup> {
               .whenComplete(() => AuthRepo.sendVerificationEmail());
           _uid = AuthRepo.uid;
 
-          await users.doc(_uid).set({
-            'name': name,
-            'email': email,
-            'phone': '',
-            'address': '',
-            'profileimage': '',
-            'storeLogo': '',
-            'storeCoverImage': '',
-            'storeName': '',
-            'cid': _uid,
-          });
+          user.User _user = user.User(
+            id: _uid,
+            role: ['Customer'],
+            name: name,
+            emailAddress: email,
+          );
+          await users.doc(_uid).set(_user.toJson());
           _formKey.currentState!.reset();
           if (context.mounted) {
             Navigator.pushReplacementNamed(context, '/Login_cus');

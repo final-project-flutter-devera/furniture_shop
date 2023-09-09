@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:furniture_shop/Constants/Colors.dart';
 import 'package:furniture_shop/Constants/string.dart';
 import 'package:furniture_shop/Constants/style.dart';
+import 'package:furniture_shop/Providers/user_provider.dart';
 import 'package:furniture_shop/Screen/4.%20SupplierHomeScreen/Screen/Components/DashboardScreen.dart';
 import 'package:furniture_shop/Widgets/action_button.dart';
 import 'package:furniture_shop/Widgets/default_app_bar.dart';
@@ -14,6 +15,7 @@ import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'dart:convert';
 import 'dart:async';
 import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
 
 class PickLocation extends StatefulWidget {
   PickLocation();
@@ -109,7 +111,6 @@ class _PickLocationState extends State<PickLocation>
   _onTap(ScreenCoordinate coordinate) async {
     //Somehow coordinate long and lat is reverse?
     chosenCoordinate = ScreenCoordinate(x: coordinate.y, y: coordinate.x);
-    print('onTap coordinate: ${currentCoordinate!.x}, ${currentCoordinate!.y}');
     //Deleting all existing annotations
     circleAnnotationManager?.deleteAll();
     //Create two overlapping circle annotations showing the tapped location
@@ -155,6 +156,8 @@ class _PickLocationState extends State<PickLocation>
 
   Future<String> _reverseGeocoding(ScreenCoordinate coordinate) async {
     final code = AppLocalization.of(context).locale.languageCode;
+    print(Uri.parse(
+        'https://api.mapbox.com/geocoding/v5/mapbox.places/${coordinate.x},${coordinate.y}.json?access_token=${mapBoxSecretToken}&language=${code}'));
     final reponse = await http.get(Uri.parse(
         'https://api.mapbox.com/geocoding/v5/mapbox.places/${coordinate.x},${coordinate.y}.json?access_token=${mapBoxSecretToken}&language=${code}'));
     return json.decode(reponse.body)['features'][0]['place_name'];
@@ -165,10 +168,13 @@ class _PickLocationState extends State<PickLocation>
   Widget build(BuildContext context) {
     final wMQ = MediaQuery.of(context).size.width;
     final hMQ = MediaQuery.of(context).size.height;
+
     return Scaffold(
         resizeToAvoidBottomInset: false,
         appBar: DefaultAppBar(
-            context: context, title: context.localize('mapbox_app_bar_title')),
+            context: context,
+            title: context.localize('mapbox_app_bar_title'),
+            actions: [IconButton(onPressed: () {}, icon: Icon(Icons.search))]),
         body: Stack(children: [
           Column(children: [
             SizedBox(
