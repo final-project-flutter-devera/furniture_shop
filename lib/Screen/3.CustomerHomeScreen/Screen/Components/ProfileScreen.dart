@@ -3,14 +3,18 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:furniture_shop/Constants/Colors.dart';
+import 'package:furniture_shop/Providers/Auth_reponse.dart';
+import 'package:furniture_shop/Providers/user_provider.dart';
 import 'package:furniture_shop/Screen/16.%20ProfileRoutes/MyShippingAddress/my_shipping_address.dart';
 import 'package:furniture_shop/Widgets/AppBarButton.dart';
 import 'package:furniture_shop/Widgets/AppBarTitle.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import '../../../../Widgets/ShowAlertDialog.dart';
 import '../../../13. MyOrderScreen/My_Order_Screen.dart';
 import 'Profile/EditInfo.dart';
 import 'SearchScreen.dart';
+import 'package:furniture_shop/Objects/user.dart' as appUser;
 
 class ProfileScreen extends StatefulWidget {
   final String documentId;
@@ -22,7 +26,8 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  CollectionReference users = FirebaseFirestore.instance.collection('users');
+  bool _isLoading = true;
+  late appUser.User user;
   CollectionReference anonymous =
       FirebaseFirestore.instance.collection('anonymous');
   List<String> tabName = [
@@ -38,72 +43,71 @@ class _ProfileScreenState extends State<ProfileScreen> {
   ];
 
   @override
+  void initState() {
+    _getUserData();
+    super.initState();
+  }
+
+  _getUserData() async {
+    user = await context.read<UserProvider>().getUser();
+    setState(() {
+      _isLoading = false;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     print('ID: ${widget.documentId}');
     final wMQ = MediaQuery.of(context).size.width;
-    return FutureBuilder<DocumentSnapshot>(
-      future: FirebaseAuth.instance.currentUser!.isAnonymous
-          ? anonymous.doc(widget.documentId).get()
-          : users.doc(widget.documentId).get(),
-      builder:
-          (BuildContext context, AsyncSnapshot<DocumentSnapshot> snapshot) {
-        if (snapshot.hasError) {
-          return const Text("Something went wrong");
-        }
 
-        if (snapshot.hasData && !snapshot.data!.exists) {
-          return const Text("Document does not exist");
-        }
-
-        if (snapshot.connectionState == ConnectionState.done) {
-          Map<String, dynamic> data =
-              snapshot.data!.data() as Map<String, dynamic>;
-          return Scaffold(
-            backgroundColor: AppColor.white,
-            appBar: AppBar(
-              elevation: 0,
-              backgroundColor: AppColor.white,
-              leading: AppBarButtonPush(
-                aimRoute: () {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const SearchScreen()));
+    return Scaffold(
+      backgroundColor: AppColor.white,
+      appBar: AppBar(
+        elevation: 0,
+        backgroundColor: AppColor.white,
+        leading: AppBarButtonPush(
+          aimRoute: () {
+            Navigator.push(context,
+                MaterialPageRoute(builder: (context) => const SearchScreen()));
+          },
+          icon: SvgPicture.asset(
+            'assets/Images/Icons/search.svg',
+            height: 24,
+            width: 24,
+          ),
+        ),
+        title: const AppBarTitle(label: 'Profile'),
+        centerTitle: true,
+        actions: [
+          IconButton(
+            icon: SvgPicture.asset('assets/Images/Icons/Logout.svg',
+                height: 24, width: 24),
+            onPressed: () async {
+              MyAlertDialog.showMyDialog(
+                context: context,
+                title: 'Log out',
+                content: 'Are you sure log out?',
+                tabNo: () {
+                  Navigator.pop(context);
                 },
-                icon: SvgPicture.asset(
-                  'assets/Images/Icons/search.svg',
-                  height: 24,
-                  width: 24,
-                ),
-              ),
-              title: const AppBarTitle(label: 'Profile'),
-              centerTitle: true,
-              actions: [
-                IconButton(
-                  icon: SvgPicture.asset('assets/Images/Icons/Logout.svg',
-                      height: 24, width: 24),
-                  onPressed: () async {
-                    MyAlertDialog.showMyDialog(
-                      context: context,
-                      title: 'Log out',
-                      content: 'Are you sure log out?',
-                      tabNo: () {
-                        Navigator.pop(context);
-                      },
-                      tabYes: () async {
-                        await FirebaseAuth.instance.signOut();
-                        if (context.mounted) {
-                          Navigator.pop(context);
-                          Navigator.pushReplacementNamed(
-                              context, '/Welcome_boarding');
-                        }
-                      },
-                    );
-                  },
-                ),
-              ],
-            ),
-            body: Padding(
+                tabYes: () async {
+                  await FirebaseAuth.instance.signOut();
+                  if (context.mounted) {
+                    Navigator.pop(context);
+                    Navigator.pushReplacementNamed(
+                        context, '/Welcome_boarding');
+                  }
+                },
+              );
+            },
+          ),
+        ],
+      ),
+      body: _isLoading
+          ? Center(
+              child: CircularProgressIndicator(),
+            )
+          : Padding(
               padding: const EdgeInsets.all(10),
               child: Column(
                 children: [
@@ -115,33 +119,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           CircleAvatar(
                             backgroundColor: AppColor.amber,
                             radius: 45,
-                            child: data['profileimage'] == ''
-                                ? const CircleAvatar(
-                                    backgroundColor: AppColor.white,
-                                    radius: 40,
-                                    backgroundImage: AssetImage(
-                                        'assets/Images/Images/avatarGuest.jpg'),
-                                  )
-                                : CircleAvatar(
-                                    backgroundColor: AppColor.white,
-                                    radius: 40,
-                                    child: data['avatar'] ??
-                                        Text(
-                                          (() {
-                                            final _initials = (data['name']
-                                                    as String)
-                                                .split(' ')
-                                                .reduce((value, element) =>
-                                                    value[0] +
-                                                    element[0].toUpperCase());
-                                            return _initials.substring(
-                                                _initials.length - 2);
-                                          })(),
-                                          style: TextStyle(
-                                              color: AppColor.black,
-                                              fontSize: 40),
-                                        ),
-                                  ),
+                            child: CircleAvatar(
+                                backgroundColor: AppColor.white,
+                                radius: 40,
+                                child: user.avatar == null || user.avatar == ''
+                                    ? Text(
+                                        (() {
+                                          final _initials = user.name
+                                              .split(' ')
+                                              .reduce((value, element) =>
+                                                  value[0] +
+                                                  element[0].toUpperCase());
+                                          return _initials
+                                              .substring(_initials.length - 2);
+                                        })(),
+                                        style: TextStyle(
+                                            color: AppColor.black,
+                                            fontSize: 40),
+                                      )
+                                    : Image.network(user.avatar!)),
                           ),
                           const SizedBox(
                             width: 20,
@@ -154,9 +150,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               TextSpan(
                                 children: [
                                   TextSpan(
-                                    text: data['name'] == ''
+                                    text: user.name == ''
                                         ? 'Guest'.toUpperCase()
-                                        : data['name'].toUpperCase(),
+                                        : user.name.toUpperCase(),
                                     style: GoogleFonts.nunito(
                                       fontSize: 20,
                                       fontWeight: FontWeight.w700,
@@ -165,9 +161,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   ),
                                   const TextSpan(text: '\n'),
                                   TextSpan(
-                                    text: data['email'] == ''
+                                    text: user.emailAddress == ''
                                         ? 'Anonymous'
-                                        : data['email'],
+                                        : user.emailAddress,
                                     style: GoogleFonts.nunito(
                                       fontSize: 14,
                                       fontWeight: FontWeight.w400,
@@ -185,9 +181,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => EditInfo(
-                                  data: data,
-                                ),
+                                builder: (context) => EditInfo(user: user),
                               ),
                             );
                           },
@@ -251,11 +245,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ],
               ),
             ),
-          );
-          // Text("Full Name: ${data['full_name']} ${data['last_name']}");
-        }
-        return const Center(child: CircularProgressIndicator());
-      },
     );
+    // Text("Full Name: ${data['full_name']} ${data['last_name']}");
   }
 }

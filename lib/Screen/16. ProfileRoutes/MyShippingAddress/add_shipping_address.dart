@@ -31,6 +31,14 @@ class _AddShippingAddressState extends State<AddShipingAddress> {
   final TextEditingController zipcodeController = TextEditingController();
 
   @override
+  void dispose() {
+    nameController.dispose();
+    streetController.dispose();
+    zipcodeController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,

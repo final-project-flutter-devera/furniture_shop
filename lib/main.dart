@@ -11,6 +11,7 @@ import 'package:furniture_shop/Providers/user_provider.dart';
 import 'package:furniture_shop/Screen/16.%20ProfileRoutes/MyShippingAddress/my_shipping_address.dart';
 import 'package:furniture_shop/localization/localization_delegate.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'Providers/Stripe_ID.dart';
 import 'Screen/1. Boarding/BoardingScreen.dart';
 import 'Screen/2. Login - Signup/Login.dart';
@@ -21,8 +22,11 @@ import 'Screen/3.CustomerHomeScreen/Screen/CustomerHomeScreen.dart';
 import 'Screen/4. SupplierHomeScreen/Screen/SupplierHomeScreen.dart';
 import 'firebase_options.dart';
 
+late SharedPreferences sharedPreferences;
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  sharedPreferences = await SharedPreferences.getInstance();
   Stripe.publishableKey = stripePublishableKey;
   Stripe.merchantIdentifier = 'merchant.flutter.stripe.test';
   Stripe.urlScheme = 'flutterstripe';

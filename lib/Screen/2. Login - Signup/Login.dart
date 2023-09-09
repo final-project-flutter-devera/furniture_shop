@@ -5,6 +5,7 @@ import 'package:furniture_shop/Providers/Auth_reponse.dart';
 import 'package:furniture_shop/Screen/3.CustomerHomeScreen/Screen/CustomerHomeScreen.dart';
 import 'package:furniture_shop/Widgets/CheckValidation.dart';
 import 'package:furniture_shop/Widgets/MyMessageHandler.dart';
+import 'package:furniture_shop/localization/app_localization.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../Constants/Colors.dart';
 import '../../Widgets/LogoLoginSignup.dart';
@@ -102,9 +103,9 @@ class _LoginState extends State<Login> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   LogoLoginSignup(wMQ: wMQ),
-                  const TextLoginSignup(
-                    label: 'Hello' + '\n',
-                    label2: 'WELCOME BACK',
+                  TextLoginSignup(
+                    label: context.localize('welcome_1') + '\n',
+                    label2: context.localize('welcome_2'),
                   ),
                   Padding(
                     padding: const EdgeInsets.all(20),

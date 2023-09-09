@@ -174,7 +174,49 @@ class _PickLocationState extends State<PickLocation>
         appBar: DefaultAppBar(
             context: context,
             title: context.localize('mapbox_app_bar_title'),
-            actions: [IconButton(onPressed: () {}, icon: Icon(Icons.search))]),
+            actions: [
+              Padding(
+                padding: const EdgeInsets.only(right: 5),
+                child: SearchAnchor(
+                    isFullScreen: true,
+                    builder: (context, controller) => SearchBar(
+                          onTap: () {
+                            controller.openView();
+                          },
+                          onSubmitted: (value) {
+                            print(value);
+                          },
+                          onChanged: (value) {
+                            print('Changing');
+                          },
+                          hintText:
+                              context.localize('hint_text_address_search'),
+                          leading: Icon(Icons.search),
+                          constraints: BoxConstraints(maxWidth: 40),
+                          elevation: MaterialStateProperty.all(0),
+                          backgroundColor:
+                              MaterialStateProperty.all(AppColor.blur_grey),
+                        ),
+                    suggestionsBuilder: (context, controller) {
+                      _listItem(Map<String, dynamic> result) {
+                        return ListTile(
+                          title: Text('Some text'),
+                          onTap: () => setState(() {
+                            controller.closeView('Some text');
+                          }),
+                        );
+                      }
+
+                      return [
+                        ListTile(
+                          title: Text('Search for an address'),
+                        )
+                      ];
+                      return addressSearchResult.map((e) => _listItem(e));
+                    }),
+              )
+              //IconButton(onPressed: () {}, icon: Icon(Icons.search))
+            ]),
         body: Stack(children: [
           Column(children: [
             SizedBox(
@@ -317,50 +359,52 @@ class _PickLocationState extends State<PickLocation>
               child: Icon(Icons.my_location),
             ),
           ),
-          Positioned(
-              top: 5,
-              right: 0,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: AppColor.white,
-                  borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(5),
-                      bottomLeft: Radius.circular(5)),
-                ),
-                width: wMQ * 0.65,
-                height: 40,
-                child: SearchAnchor(
-                  searchController: controller,
-                  isFullScreen: true,
-                  builder: (BuildContext context, SearchController controller) {
-                    return SearchBar(
-                        controller: controller,
-                        onTap: () {
-                          print('onSubmitted called with query: ');
-                          controller.openView();
-                        },
-                        onSubmitted: (query) {
-                          print(
-                              'onSubmitted called with query: ${controller.text}');
-                        },
-                        onChanged: _onSearchChanged,
-                        leading: Icon(Icons.search),
-                        hintText: context.localize('hint_text_address_search'));
-                  },
-                  suggestionsBuilder: (context, controller) {
-                    _listItem(Map<String, dynamic> result) {
-                      return ListTile(
-                        title: Text('Some text'),
-                        onTap: () => setState(() {
-                          controller.closeView('Some text');
-                        }),
-                      );
-                    }
-
-                    return addressSearchResult.map((e) => _listItem(e));
-                  },
-                ),
-              ))
         ]));
   }
 }
+
+
+          // Positioned(
+          //     top: 5,
+          //     right: 0,
+          //     child: Container(
+          //       decoration: BoxDecoration(
+          //         color: AppColor.white,
+          //         borderRadius: BorderRadius.only(
+          //             topLeft: Radius.circular(5),
+          //             bottomLeft: Radius.circular(5)),
+          //       ),
+          //       width: wMQ * 0.65,
+          //       height: 40,
+          //       child: SearchAnchor(
+          //         searchController: controller,
+          //         isFullScreen: true,
+          //         builder: (BuildContext context, SearchController controller) {
+          //           return SearchBar(
+          //               controller: controller,
+          //               onTap: () {
+          //                 print('onSubmitted called with query: ');
+          //                 controller.openView();
+          //               },
+          //               onSubmitted: (query) {
+          //                 print(
+          //                     'onSubmitted called with query: ${controller.text}');
+          //               },
+          //               onChanged: _onSearchChanged,
+          //               leading: Icon(Icons.search),
+          //               hintText: context.localize('hint_text_address_search'));
+          //         },
+                  // suggestionsBuilder: (context, controller) {
+                  //   _listItem(Map<String, dynamic> result) {
+                  //     return ListTile(
+                  //       title: Text('Some text'),
+                  //       onTap: () => setState(() {
+                  //         controller.closeView('Some text');
+                  //       }),
+                  //     );
+                  //   }
+
+          //           return addressSearchResult.map((e) => _listItem(e));
+          //         },
+          //       ),
+          //     ))

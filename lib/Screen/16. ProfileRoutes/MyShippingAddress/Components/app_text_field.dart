@@ -22,6 +22,7 @@ class _AppTextFormFieldState extends State<AppTextFormField> {
   @override
   Widget build(BuildContext context) {
     return TextFormField(
+      onChanged: (value) {},
       keyboardType: widget.isNumber ? TextInputType.number : null,
       controller: widget.controller,
       validator: (String? value) {
