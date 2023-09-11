@@ -21,14 +21,15 @@ class AddShipingAddress extends StatefulWidget {
 
 class _AddShippingAddressState extends State<AddShipingAddress> {
   String? countryValue = '';
-  String? stateValue = '';
   String? cityValue = '';
+  String? districtValue = '';
   String? address = '';
   String? errorMessage;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController nameController = TextEditingController();
   final TextEditingController streetController = TextEditingController();
   final TextEditingController zipcodeController = TextEditingController();
+  final TextEditingController placeController = TextEditingController();
 
   @override
   void dispose() {
@@ -105,14 +106,24 @@ class _AddShippingAddressState extends State<AddShipingAddress> {
               },
               onStateChanged: (value) {
                 setState(() {
-                  stateValue = value;
+                  cityValue = value;
                 });
               },
               onCityChanged: (value) {
                 setState(() {
-                  cityValue = value;
+                  districtValue = value;
                 });
               },
+            ),
+          ),
+          Padding(
+            padding:
+                const EdgeInsets.only(top: 10, left: 20, right: 20, bottom: 10),
+            child: AppTextFormField(
+              isNumber: false,
+              controller: placeController,
+              labelText: context.localize('label_place'),
+              hintText: context.localize('place_holder_place'),
             ),
           ),
           Text(
@@ -149,13 +160,14 @@ class _AddShippingAddressState extends State<AddShipingAddress> {
                   onPressed: () {
                     if (_formKey.currentState!.validate() &&
                         cityValue != null &&
-                        stateValue != null &&
+                        districtValue != null &&
                         countryValue != null) {
                       final newAddress = Address(
                         name: nameController.text,
                         street: streetController.text,
                         city: cityValue!,
-                        state: stateValue!,
+                        place: placeController.text,
+                        district: districtValue!,
                         zipCode: zipcodeController.text,
                         country: countryValue!,
                       );
@@ -163,7 +175,7 @@ class _AddShippingAddressState extends State<AddShipingAddress> {
                       Navigator.pop(context);
                     } else {
                       if (cityValue != null &&
-                          stateValue != null &&
+                          districtValue != null &&
                           countryValue != null) {
                         setState(() {
                           errorMessage =

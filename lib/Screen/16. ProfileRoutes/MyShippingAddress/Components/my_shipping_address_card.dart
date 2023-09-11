@@ -104,7 +104,7 @@ class _MyShippingAddressCardState extends State<MyShippingAddressCard> {
                           title: context
                               .localize('alert_box_title_delete_address'),
                           content:
-                              '${widget.address.street}, ${widget.address.city}, ${widget.address.zipCode}, ${widget.address.state}, ${widget.address.country}',
+                              '${widget.address.zipCode}, ${widget.address.street}, ${widget.address.place}, ${widget.address.city}, ${widget.address.district}, ${widget.address.country}',
                           onNoPressed: () {
                             Navigator.pop(context);
                           },
@@ -132,7 +132,7 @@ class _MyShippingAddressCardState extends State<MyShippingAddressCard> {
                   padding:
                       const EdgeInsets.only(left: 20, right: 20, bottom: 15),
                   child: Text(
-                    '${widget.address.street}, ${widget.address.city}, ${widget.address.zipCode}, ${widget.address.state}, ${widget.address.country}',
+                    '${widget.address.zipCode}, ${widget.address.street}, ${widget.address.place}, ${widget.address.city}, ${widget.address.district}, ${widget.address.country}',
                     textAlign: TextAlign.justify,
                     style: GoogleFonts.nunitoSans(
                         color: AppColor.text_secondary, fontSize: 14),

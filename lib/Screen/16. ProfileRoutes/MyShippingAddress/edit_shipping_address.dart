@@ -23,23 +23,25 @@ class EditShippingAddress extends StatefulWidget {
 
 class _EditShippingAddressState extends State<EditShippingAddress> {
   String? countryValue = '';
-  String? stateValue = '';
   String? cityValue = '';
+  String? districtValue = '';
   String? address = '';
   String? errorMessage;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController nameController = TextEditingController();
   final TextEditingController streetController = TextEditingController();
   final TextEditingController zipcodeController = TextEditingController();
+  final TextEditingController placeController = TextEditingController();
 
   @override
   void initState() {
     countryValue = widget.address.country;
-    stateValue = widget.address.state;
+    districtValue = widget.address.district;
     cityValue = widget.address.city;
     nameController.text = widget.address.name;
-    streetController.text = widget.address.street;
-    zipcodeController.text = widget.address.zipCode;
+    streetController.text = widget.address.street ?? '';
+    zipcodeController.text = widget.address.zipCode ?? '';
+    placeController.text = widget.address.place ?? '';
     super.initState();
   }
 
@@ -91,9 +93,6 @@ class _EditShippingAddressState extends State<EditShippingAddress> {
               showCities: true,
               showStates: true,
               flagState: CountryFlag.DISABLE,
-              currentCountry: countryValue,
-              currentCity: cityValue,
-              currentState: stateValue,
               countrySearchPlaceholder: context.localize('label_country'),
               stateSearchPlaceholder: context.localize('label_city'),
               citySearchPlaceholder: context.localize('label_district'),
@@ -113,12 +112,12 @@ class _EditShippingAddressState extends State<EditShippingAddress> {
               },
               onStateChanged: (value) {
                 setState(() {
-                  stateValue = value;
+                  cityValue = value;
                 });
               },
               onCityChanged: (value) {
                 setState(() {
-                  cityValue = value;
+                  districtValue = value;
                 });
               },
             ),
@@ -157,22 +156,22 @@ class _EditShippingAddressState extends State<EditShippingAddress> {
                   onPressed: () {
                     if (_formKey.currentState!.validate() &&
                         cityValue != null &&
-                        stateValue != null &&
+                        districtValue != null &&
                         countryValue != null) {
                       final newAddress = Address(
                         name: nameController.text,
                         street: streetController.text,
                         city: cityValue!,
-                        state: stateValue!,
+                        place: placeController.text,
+                        district: districtValue!,
                         zipCode: zipcodeController.text,
                         country: countryValue!,
-                        isDefault: widget.address.isDefault,
                       );
                       widget.onTap.call(newAddress);
                       Navigator.pop(context);
                     } else {
                       if (cityValue != null &&
-                          stateValue != null &&
+                          districtValue != null &&
                           countryValue != null) {
                         setState(() {
                           errorMessage =

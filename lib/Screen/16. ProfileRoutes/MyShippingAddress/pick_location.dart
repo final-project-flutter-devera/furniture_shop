@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:furniture_shop/Constants/Colors.dart';
 import 'package:furniture_shop/Constants/string.dart';
 import 'package:furniture_shop/Constants/style.dart';
+import 'package:furniture_shop/Objects/address.dart';
 import 'package:furniture_shop/Providers/user_provider.dart';
 import 'package:furniture_shop/Screen/4.%20SupplierHomeScreen/Screen/Components/DashboardScreen.dart';
 import 'package:furniture_shop/Widgets/action_button.dart';
@@ -38,6 +39,7 @@ class _PickLocationState extends State<PickLocation>
 
   ScreenCoordinate? chosenCoordinate;
   String? chosenLocation;
+  final searchController = SearchController();
 
   Location location = new Location();
   LocationData? _locationData;
@@ -53,7 +55,6 @@ class _PickLocationState extends State<PickLocation>
 
   @override
   void dispose() {
-    _debounce?.cancel();
     super.dispose();
   }
 
@@ -131,33 +132,8 @@ class _PickLocationState extends State<PickLocation>
     setState(() {});
   }
 
-  Timer? _debounce;
-
-  _onSearchChanged(String query) {
-    print(query);
-    _debounce?.cancel();
-    _debounce = Timer(const Duration(milliseconds: 500), () async {
-      addressSearchResult = await _forwardGeocoding(query);
-      setState(() {});
-      print('LENGTH: ${addressSearchResult.length}');
-    });
-  }
-
-  List<Map<String, dynamic>> addressSearchResult = [];
-
-  Future<List<Map<String, dynamic>>> _forwardGeocoding(String query) async {
-    final code = AppLocalization.of(context).locale.languageCode;
-    print(Uri.parse(
-        'https://api.mapbox.com/geocoding/v5/mapbox.places/$query.json?access_token=${mapBoxSecretToken}&language=${code}'));
-    final reponse = await http.get(Uri.parse(
-        'https://api.mapbox.com/geocoding/v5/mapbox.places/$query.json?access_token=${mapBoxSecretToken}&language=${code}'));
-    return json.decode(reponse.body)['features'];
-  }
-
   Future<String> _reverseGeocoding(ScreenCoordinate coordinate) async {
     final code = AppLocalization.of(context).locale.languageCode;
-    print(Uri.parse(
-        'https://api.mapbox.com/geocoding/v5/mapbox.places/${coordinate.x},${coordinate.y}.json?access_token=${mapBoxSecretToken}&language=${code}'));
     final reponse = await http.get(Uri.parse(
         'https://api.mapbox.com/geocoding/v5/mapbox.places/${coordinate.x},${coordinate.y}.json?access_token=${mapBoxSecretToken}&language=${code}'));
     return json.decode(reponse.body)['features'][0]['place_name'];
@@ -176,46 +152,19 @@ class _PickLocationState extends State<PickLocation>
             title: context.localize('mapbox_app_bar_title'),
             actions: [
               Padding(
-                padding: const EdgeInsets.only(right: 5),
-                child: SearchAnchor(
-                    isFullScreen: true,
-                    builder: (context, controller) => SearchBar(
-                          onTap: () {
-                            controller.openView();
-                          },
-                          onSubmitted: (value) {
-                            print(value);
-                          },
-                          onChanged: (value) {
-                            print('Changing');
-                          },
-                          hintText:
-                              context.localize('hint_text_address_search'),
-                          leading: Icon(Icons.search),
-                          constraints: BoxConstraints(maxWidth: 40),
-                          elevation: MaterialStateProperty.all(0),
-                          backgroundColor:
-                              MaterialStateProperty.all(AppColor.blur_grey),
-                        ),
-                    suggestionsBuilder: (context, controller) {
-                      _listItem(Map<String, dynamic> result) {
-                        return ListTile(
-                          title: Text('Some text'),
-                          onTap: () => setState(() {
-                            controller.closeView('Some text');
-                          }),
-                        );
-                      }
-
-                      return [
-                        ListTile(
-                          title: Text('Search for an address'),
-                        )
-                      ];
-                      return addressSearchResult.map((e) => _listItem(e));
-                    }),
-              )
-              //IconButton(onPressed: () {}, icon: Icon(Icons.search))
+                  padding: const EdgeInsets.only(right: 5),
+                  child: IconButton(
+                      onPressed: () {
+                        showSearch(
+                            context: context,
+                            delegate: AddressSearchDelegate(
+                              context: context,
+                              hintText:
+                                  context.localize('hint_text_address_search'),
+                              onSelected: (address) {},
+                            ));
+                      },
+                      icon: Icon(Icons.search))),
             ]),
         body: Stack(children: [
           Column(children: [
@@ -363,48 +312,175 @@ class _PickLocationState extends State<PickLocation>
   }
 }
 
+class AddressSearchDelegate extends SearchDelegate {
+  final ValueChanged<Address> onSelected;
+  final String hintText;
+  final BuildContext context;
+  AddressSearchDelegate(
+      {required this.hintText,
+      required this.context,
+      required this.onSelected});
 
-          // Positioned(
-          //     top: 5,
-          //     right: 0,
-          //     child: Container(
-          //       decoration: BoxDecoration(
-          //         color: AppColor.white,
-          //         borderRadius: BorderRadius.only(
-          //             topLeft: Radius.circular(5),
-          //             bottomLeft: Radius.circular(5)),
-          //       ),
-          //       width: wMQ * 0.65,
-          //       height: 40,
-          //       child: SearchAnchor(
-          //         searchController: controller,
-          //         isFullScreen: true,
-          //         builder: (BuildContext context, SearchController controller) {
-          //           return SearchBar(
-          //               controller: controller,
-          //               onTap: () {
-          //                 print('onSubmitted called with query: ');
-          //                 controller.openView();
-          //               },
-          //               onSubmitted: (query) {
-          //                 print(
-          //                     'onSubmitted called with query: ${controller.text}');
-          //               },
-          //               onChanged: _onSearchChanged,
-          //               leading: Icon(Icons.search),
-          //               hintText: context.localize('hint_text_address_search'));
-          //         },
-                  // suggestionsBuilder: (context, controller) {
-                  //   _listItem(Map<String, dynamic> result) {
-                  //     return ListTile(
-                  //       title: Text('Some text'),
-                  //       onTap: () => setState(() {
-                  //         controller.closeView('Some text');
-                  //       }),
-                  //     );
-                  //   }
+  @override
+  String? get searchFieldLabel => hintText;
 
-          //           return addressSearchResult.map((e) => _listItem(e));
-          //         },
-          //       ),
-          //     ))
+  Timer? _debounce;
+  Future<List<dynamic>> _onSearchChanged(String query) async {
+    Completer<List<dynamic>> completer = Completer();
+    _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 500), () async {
+      final addressSearchResult = await _forwardGeocoding(query);
+      print('Address search result length: ${addressSearchResult.length}');
+
+      print('LENGTH: ${addressSearchResult.length}');
+      completer.complete(addressSearchResult);
+    });
+    return completer.future;
+  }
+
+  Future<List<dynamic>> _onSearchSubmit(String query) async {
+    Completer<List<dynamic>> completer = Completer();
+
+    final addressSearchResult = await _forwardGeocoding(query);
+    print('Address search result length: ${addressSearchResult.length}');
+
+    print('LENGTH: ${addressSearchResult.length}');
+    completer.complete(addressSearchResult);
+
+    return completer.future;
+  }
+
+  List<Map<String, dynamic>> addressSearchResult = [];
+
+  ///Return type: List<Map<String, dynamic>>
+  Future<List<dynamic>> _forwardGeocoding(String query) async {
+    final code = AppLocalization.of(context).locale.languageCode;
+    print(Uri.parse(
+        'https://api.mapbox.com/geocoding/v5/mapbox.places/$query.json?access_token=${mapBoxSecretToken}&language=${code}'));
+    final reponse = await http.get(Uri.parse(
+        'https://api.mapbox.com/geocoding/v5/mapbox.places/$query.json?access_token=${mapBoxSecretToken}&language=${code}'));
+    return json.decode(reponse.body)['features'];
+  }
+
+  @override
+  List<Widget>? buildActions(BuildContext context) {
+    return [
+      IconButton(
+          onPressed: () {
+            query = '';
+          },
+          icon: Icon(Icons.clear))
+    ];
+  }
+
+  @override
+  Widget? buildLeading(BuildContext context) {
+    return IconButton(
+        onPressed: () {
+          close(context, null);
+        },
+        icon: Icon(Icons.arrow_back_ios));
+  }
+
+  @override
+  Widget buildResults(BuildContext context) {
+    return FutureBuilder<List<dynamic>>(
+      future: _onSearchChanged(query),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return CircularProgressIndicator(); // Show a loading indicator while fetching data
+        } else if (snapshot.hasError) {
+          return Text('Error: ${snapshot.error}');
+        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return Text('No suggestions found');
+        } else {
+          // Suggestions based on snapshot.data
+          return ListView.builder(
+            itemCount: snapshot.data?.length,
+            itemBuilder: (context, index) {
+              final Map<String, dynamic> thisResult = snapshot.data![index];
+              print('This result: ${thisResult.length}');
+              // ... Rest of your code to build suggestions ...
+              final coordinate = ScreenCoordinate(
+                  x: thisResult['geometry']['coordinates'][1],
+                  y: thisResult['geometry']['coordinates'][0]);
+              print('Coordinate $coordinate');
+              final String addressString = thisResult['place_name'];
+
+              final String street = thisResult['text'];
+              final List<dynamic> context = thisResult['context'];
+
+              context.forEach((element) {
+                if ((element['id'] as String).contains('place')) {
+                  print('hi');
+                }
+              });
+              return ListTile(
+                title: Text(addressString),
+              );
+            },
+          );
+        }
+      },
+    );
+  }
+
+  @override
+  Widget buildSuggestions(BuildContext context) {
+    if (query.length == 0) return SizedBox();
+    return FutureBuilder<List<dynamic>>(
+      future: _onSearchChanged(query),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return CircularProgressIndicator(); // Show a loading indicator while fetching data
+        } else if (snapshot.hasError) {
+          return Text('Error: ${snapshot.error}');
+        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return Text('No suggestions found');
+        } else {
+          // Suggestions based on snapshot.data
+          return ListView.builder(
+            itemCount: snapshot.data?.length,
+            itemBuilder: (context, index) {
+              final Map<String, dynamic> thisResult = snapshot.data![index];
+              print('This result: ${thisResult.length}');
+              // ... Rest of your code to build suggestions ...
+              final coordinate = ScreenCoordinate(
+                  x: thisResult['geometry']['coordinates'][1],
+                  y: thisResult['geometry']['coordinates'][0]);
+              print('Coordinate $coordinate');
+              final String addressString = thisResult['place_name'];
+
+              final String street = thisResult['text'];
+              final List<dynamic> context = thisResult['context'];
+
+              context.forEach((element) {
+                if ((element['id'] as String).contains('place')) {
+                  print('hi');
+                }
+              });
+              return Container(
+                decoration: BoxDecoration(border: Border.all()),
+                child: ListTile(
+                  onTap: () {
+                    // onSelected.call(Address(
+                    //     name: '',
+                    //     street: street,
+                    //     place: place,
+                    //     district: district,
+                    //     city: city,
+                    //     zipCode: zipCode,
+                    //     country: country));
+                  },
+                  title: Text(addressString),
+                  style: ListTileStyle.list,
+                  titleAlignment: ListTileTitleAlignment.center,
+                ),
+              );
+            },
+          );
+        }
+      },
+    );
+  }
+}

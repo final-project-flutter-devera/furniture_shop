@@ -1,18 +1,20 @@
 class Address {
   String name;
-  String street;
-  String city;
-  String state;
-  String zipCode;
-  String country;
+  String? street;
+  String? place;
+  String? district;
+  String? city;
+  String? country;
+  String? zipCode;
   double? longitude;
   double? latitude;
   bool? isDefault = false;
   Address({
     required this.name,
     required this.street,
+    required this.place,
+    required this.district,
     required this.city,
-    required this.state,
     required this.zipCode,
     required this.country,
     this.longitude,
@@ -23,11 +25,12 @@ class Address {
   factory Address.fromJson(Map<String, dynamic> json) {
     return Address(
         name: json['name'] as String,
-        street: json['street'] as String,
-        city: json['city'] as String,
-        state: json['state'] as String,
-        zipCode: json['zipCode'] as String,
-        country: json['country'] as String,
+        street: json['street'],
+        place: json['place'],
+        city: json['city'],
+        district: json['state'],
+        zipCode: json['zipCode'],
+        country: json['country'],
         longitude: json['longitude'] as double?,
         latitude: json['latitude'] as double?,
         isDefault: json['isDefault']);
@@ -38,7 +41,8 @@ class Address {
       'name': name,
       'street': street,
       'city': city,
-      'state': state,
+      'place': place,
+      'district': district,
       'zipCode': zipCode,
       'country': country,
       'longitude': longitude,
