@@ -4,8 +4,6 @@ import 'package:furniture_shop/Constants/Colors.dart';
 import 'package:furniture_shop/Constants/string.dart';
 import 'package:furniture_shop/Constants/style.dart';
 import 'package:furniture_shop/Objects/address.dart';
-import 'package:furniture_shop/Providers/user_provider.dart';
-import 'package:furniture_shop/Screen/4.%20SupplierHomeScreen/Screen/Components/DashboardScreen.dart';
 import 'package:furniture_shop/Widgets/action_button.dart';
 import 'package:furniture_shop/Widgets/default_app_bar.dart';
 import 'package:furniture_shop/localization/app_localization.dart';
@@ -19,7 +17,8 @@ import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 
 class PickLocation extends StatefulWidget {
-  PickLocation();
+  final ValueChanged<Address> onSubmit;
+  PickLocation({required this.onSubmit});
 
   @override
   State<PickLocation> createState() => _PickLocationState();
@@ -31,6 +30,9 @@ class _PickLocationState extends State<PickLocation>
   CircleAnnotation? circleAnnotation;
   CircleAnnotationManager? circleAnnotationManager;
   int styleIndex = 1;
+
+  Address? selectedAddress;
+  Address? currentAddress;
 
   ScreenCoordinate? currentCoordinate;
   String? currentLocation;
@@ -78,7 +80,48 @@ class _PickLocationState extends State<PickLocation>
     sharedPreferences.setDouble('longitude', _locationData.longitude!);
     currentCoordinate = ScreenCoordinate(
         x: _locationData.longitude!, y: _locationData.latitude!);
-    currentLocation = await _reverseGeocoding(currentCoordinate!);
+    final Map<String, dynamic> thisResult =
+        (await _reverseGeocoding(currentCoordinate!))[0];
+
+    final double latitude = thisResult['geometry']['coordinates'][1];
+    final double longitude = thisResult['geometry']['coordinates'][0];
+
+    final String street = thisResult['text'];
+    final List<dynamic> context = thisResult['context'];
+    String? zipCode;
+    String? place;
+    String? district;
+    String? region;
+    String? country;
+    context.forEach((element) {
+      if ((element['id'] as String).contains('place')) {
+        place = element['text'];
+      }
+      if ((element['id'] as String).contains('district')) {
+        district = element['text'];
+      }
+      if ((element['id'] as String).contains('region')) {
+        region = element['text'];
+      }
+      if ((element['id'] as String).contains('country')) {
+        country = element['text'];
+      }
+      if ((element['id'] as String).contains('postcode')) {
+        zipCode = element['text'];
+      }
+    });
+
+    currentLocation = thisResult['place_name'];
+    currentAddress = Address(
+        name: '',
+        street: street,
+        place: place,
+        district: district,
+        city: region,
+        zipCode: zipCode,
+        country: country,
+        latitude: latitude,
+        longitude: longitude);
     setState(() {});
   }
 
@@ -93,20 +136,25 @@ class _PickLocationState extends State<PickLocation>
   }
 
   _moveToCurrentLocation() async {
+    await _moveToLocation(ScreenCoordinate(
+      x: sharedPreferences.getDouble('longitude') ?? 0,
+      y: sharedPreferences.getDouble('latitude') ?? 0,
+    ));
+  }
+
+  _moveToLocation(ScreenCoordinate screenCoordinate) async {
     final zoom = await mapboxMap?.getCameraState().then((value) => value.zoom);
     mapboxMap?.flyTo(
         CameraOptions(
           zoom: (zoom! < 12) ? 12 : null,
           center: Point(
-                  coordinates: Position(
-                      sharedPreferences.getDouble('longitude') ?? 0,
-                      sharedPreferences.getDouble('latitude') ?? 0))
-              .toJson(),
+              coordinates: Position(
+            screenCoordinate.x,
+            screenCoordinate.y,
+          )).toJson(),
         ),
         MapAnimationOptions(duration: 1, startDelay: 0));
   }
-
-  _onStyleLoadedCallback() async {}
 
   ///Place a circle annotation onTap and set Chosen location to tapped location
   _onTap(ScreenCoordinate coordinate) async {
@@ -127,16 +175,58 @@ class _PickLocationState extends State<PickLocation>
             .toJson(),
         circleColor: Colors.green.value,
         circleRadius: 6));
+    final Map<String, dynamic> thisResult =
+        (await _reverseGeocoding(chosenCoordinate!))[0];
 
-    chosenLocation = await _reverseGeocoding(chosenCoordinate!);
+    final double latitude = thisResult['geometry']['coordinates'][1];
+    final double longitude = thisResult['geometry']['coordinates'][0];
+
+    final String street = thisResult['text'];
+    final List<dynamic> context = thisResult['context'];
+    String? zipCode;
+    String? place;
+    String? district;
+    String? region;
+    String? country;
+    context.forEach((element) {
+      if ((element['id'] as String).contains('place')) {
+        place = element['text'];
+      }
+      if ((element['id'] as String).contains('district')) {
+        district = element['text'];
+      }
+      if ((element['id'] as String).contains('region')) {
+        region = element['text'];
+      }
+      if ((element['id'] as String).contains('country')) {
+        country = element['text'];
+      }
+      if ((element['id'] as String).contains('postcode')) {
+        zipCode = element['text'];
+      }
+    });
+
+    chosenLocation = thisResult['place_name'];
+    selectedAddress = Address(
+        name: '',
+        street: street,
+        place: place,
+        district: district,
+        city: region,
+        zipCode: zipCode,
+        country: country,
+        latitude: latitude,
+        longitude: longitude);
     setState(() {});
   }
 
-  Future<String> _reverseGeocoding(ScreenCoordinate coordinate) async {
+  Future<List<dynamic>> _reverseGeocoding(ScreenCoordinate coordinate) async {
     final code = AppLocalization.of(context).locale.languageCode;
+    print(Uri.parse(
+        'https://api.mapbox.com/geocoding/v5/mapbox.places/${coordinate.x},${coordinate.y}.json?access_token=${mapBoxSecretToken}&language=${code}'));
     final reponse = await http.get(Uri.parse(
         'https://api.mapbox.com/geocoding/v5/mapbox.places/${coordinate.x},${coordinate.y}.json?access_token=${mapBoxSecretToken}&language=${code}'));
-    return json.decode(reponse.body)['features'][0]['place_name'];
+    return json.decode(reponse.body)['features'];
   }
 
   final SearchController controller = SearchController();
@@ -161,7 +251,16 @@ class _PickLocationState extends State<PickLocation>
                               context: context,
                               hintText:
                                   context.localize('hint_text_address_search'),
-                              onSelected: (address) {},
+                              onSelected: (address) async {
+                                selectedAddress = address;
+                                final coordinate = ScreenCoordinate(
+                                    x: address.longitude!,
+                                    y: address.latitude!);
+                                await _onTap(ScreenCoordinate(
+                                    x: address.latitude!,
+                                    y: address.longitude!));
+                                _moveToLocation(coordinate);
+                              },
                             ));
                       },
                       icon: Icon(Icons.search))),
@@ -260,10 +359,18 @@ class _PickLocationState extends State<PickLocation>
                                     content: Text(chosenLocation!),
                                     actions: [
                                       CupertinoDialogAction(
+                                          onPressed: () {
+                                            widget.onSubmit
+                                                .call(selectedAddress!);
+                                            Navigator.of(context)
+                                              ..pop()
+                                              ..pop();
+                                          },
                                           child: Text(
-                                        'Yes',
-                                        style: TextStyle(color: AppColor.blue),
-                                      )),
+                                            'Yes',
+                                            style:
+                                                TextStyle(color: AppColor.blue),
+                                          )),
                                       CupertinoDialogAction(
                                           onPressed: () =>
                                               Navigator.pop(context),
@@ -330,9 +437,7 @@ class AddressSearchDelegate extends SearchDelegate {
     _debounce?.cancel();
     _debounce = Timer(const Duration(milliseconds: 500), () async {
       final addressSearchResult = await _forwardGeocoding(query);
-      print('Address search result length: ${addressSearchResult.length}');
 
-      print('LENGTH: ${addressSearchResult.length}');
       completer.complete(addressSearchResult);
     });
     return completer.future;
@@ -342,9 +447,6 @@ class AddressSearchDelegate extends SearchDelegate {
     Completer<List<dynamic>> completer = Completer();
 
     final addressSearchResult = await _forwardGeocoding(query);
-    print('Address search result length: ${addressSearchResult.length}');
-
-    print('LENGTH: ${addressSearchResult.length}');
     completer.complete(addressSearchResult);
 
     return completer.future;
@@ -384,11 +486,14 @@ class AddressSearchDelegate extends SearchDelegate {
 
   @override
   Widget buildResults(BuildContext context) {
+    if (query.length == 0) return SizedBox();
     return FutureBuilder<List<dynamic>>(
-      future: _onSearchChanged(query),
+      future: _onSearchSubmit(query),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return CircularProgressIndicator(); // Show a loading indicator while fetching data
+          return Center(
+              child:
+                  CircularProgressIndicator()); // Show a loading indicator while fetching data
         } else if (snapshot.hasError) {
           return Text('Error: ${snapshot.error}');
         } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
@@ -401,22 +506,65 @@ class AddressSearchDelegate extends SearchDelegate {
               final Map<String, dynamic> thisResult = snapshot.data![index];
               print('This result: ${thisResult.length}');
               // ... Rest of your code to build suggestions ...
-              final coordinate = ScreenCoordinate(
-                  x: thisResult['geometry']['coordinates'][1],
-                  y: thisResult['geometry']['coordinates'][0]);
-              print('Coordinate $coordinate');
+
+              final double latitude = thisResult['geometry']['coordinates'][1];
+              final double longitude = thisResult['geometry']['coordinates'][0];
+
               final String addressString = thisResult['place_name'];
 
               final String street = thisResult['text'];
               final List<dynamic> context = thisResult['context'];
-
+              String? zipCode;
+              String? place;
+              String? district;
+              String? region;
+              String? country;
               context.forEach((element) {
                 if ((element['id'] as String).contains('place')) {
-                  print('hi');
+                  place = element['text'];
+                }
+                if ((element['id'] as String).contains('district')) {
+                  district = element['text'];
+                }
+                if ((element['id'] as String).contains('region')) {
+                  region = element['text'];
+                }
+                if ((element['id'] as String).contains('country')) {
+                  country = element['text'];
+                }
+                if ((element['id'] as String).contains('postcode')) {
+                  zipCode = element['text'];
                 }
               });
-              return ListTile(
-                title: Text(addressString),
+              return Container(
+                decoration: BoxDecoration(
+                    border: Border(
+                        top: index != 0
+                            ? BorderSide(color: AppColor.blur_grey)
+                            : BorderSide.none)),
+                child: ListTile(
+                  onTap: () {
+                    onSelected.call(Address(
+                        name: '',
+                        street: street,
+                        place: place,
+                        district: district,
+                        city: region,
+                        zipCode: zipCode,
+                        country: country,
+                        latitude: latitude,
+                        longitude: longitude));
+                    close(this.context, null);
+                  },
+                  title: Text(
+                    addressString,
+                    style: AppStyle.secondary_text_style,
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  style: ListTileStyle.list,
+                  titleAlignment: ListTileTitleAlignment.center,
+                ),
               );
             },
           );
@@ -432,7 +580,9 @@ class AddressSearchDelegate extends SearchDelegate {
       future: _onSearchChanged(query),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return CircularProgressIndicator(); // Show a loading indicator while fetching data
+          return Center(
+              child:
+                  CircularProgressIndicator()); // Show a loading indicator while fetching data
         } else if (snapshot.hasError) {
           return Text('Error: ${snapshot.error}');
         } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
@@ -443,36 +593,62 @@ class AddressSearchDelegate extends SearchDelegate {
             itemCount: snapshot.data?.length,
             itemBuilder: (context, index) {
               final Map<String, dynamic> thisResult = snapshot.data![index];
-              print('This result: ${thisResult.length}');
-              // ... Rest of your code to build suggestions ...
-              final coordinate = ScreenCoordinate(
-                  x: thisResult['geometry']['coordinates'][1],
-                  y: thisResult['geometry']['coordinates'][0]);
-              print('Coordinate $coordinate');
+
+              final double latitude = thisResult['geometry']['coordinates'][1];
+              final double longitude = thisResult['geometry']['coordinates'][0];
+
               final String addressString = thisResult['place_name'];
 
               final String street = thisResult['text'];
               final List<dynamic> context = thisResult['context'];
-
+              String? zipCode;
+              String? place;
+              String? district;
+              String? region;
+              String? country;
               context.forEach((element) {
                 if ((element['id'] as String).contains('place')) {
-                  print('hi');
+                  place = element['text'];
+                }
+                if ((element['id'] as String).contains('district')) {
+                  district = element['text'];
+                }
+                if ((element['id'] as String).contains('region')) {
+                  region = element['text'];
+                }
+                if ((element['id'] as String).contains('country')) {
+                  country = element['text'];
+                }
+                if ((element['id'] as String).contains('postcode')) {
+                  zipCode = element['text'];
                 }
               });
               return Container(
-                decoration: BoxDecoration(border: Border.all()),
+                decoration: BoxDecoration(
+                    border: Border(
+                        top: index != 0
+                            ? BorderSide(color: AppColor.blur_grey)
+                            : BorderSide.none)),
                 child: ListTile(
                   onTap: () {
-                    // onSelected.call(Address(
-                    //     name: '',
-                    //     street: street,
-                    //     place: place,
-                    //     district: district,
-                    //     city: city,
-                    //     zipCode: zipCode,
-                    //     country: country));
+                    onSelected.call(Address(
+                        name: '',
+                        street: street,
+                        place: place,
+                        district: district,
+                        city: region,
+                        zipCode: zipCode,
+                        country: country,
+                        latitude: latitude,
+                        longitude: longitude));
+                    close(this.context, null);
                   },
-                  title: Text(addressString),
+                  title: Text(
+                    addressString,
+                    style: AppStyle.secondary_text_style,
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                   style: ListTileStyle.list,
                   titleAlignment: ListTileTitleAlignment.center,
                 ),

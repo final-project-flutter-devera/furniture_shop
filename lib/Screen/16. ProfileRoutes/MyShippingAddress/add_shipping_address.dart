@@ -20,16 +20,21 @@ class AddShipingAddress extends StatefulWidget {
 }
 
 class _AddShippingAddressState extends State<AddShipingAddress> {
-  String? countryValue = '';
-  String? cityValue = '';
-  String? districtValue = '';
+  // String? countryValue = '';
+  // String? cityValue = '';
+  // String? districtValue = '';
   String? address = '';
   String? errorMessage;
+  double? latitude;
+  double? longitude;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController nameController = TextEditingController();
   final TextEditingController streetController = TextEditingController();
   final TextEditingController zipcodeController = TextEditingController();
   final TextEditingController placeController = TextEditingController();
+  final TextEditingController districtController = TextEditingController();
+  final TextEditingController cityController = TextEditingController();
+  final TextEditingController countryController = TextEditingController();
 
   @override
   void dispose() {
@@ -48,7 +53,7 @@ class _AddShippingAddressState extends State<AddShipingAddress> {
           title: context.localize('add_shipping_address_app_bar_title')),
       body: Form(
         key: _formKey,
-        child: Column(children: [
+        child: ListView(children: [
           Padding(
             padding:
                 const EdgeInsets.only(top: 10, left: 20, right: 20, bottom: 10),
@@ -79,41 +84,71 @@ class _AddShippingAddressState extends State<AddShipingAddress> {
               hintText: context.localize('place_holder_zipcode'),
             ),
           ),
+          // Padding(
+          //   padding:
+          //       const EdgeInsets.only(top: 10, left: 20, right: 20, bottom: 10),
+          //   child: CSCPicker(
+          //     layout: Layout.vertical,
+          //     showCities: true,
+          //     showStates: true,
+          //     flagState: CountryFlag.DISABLE,
+          //     countrySearchPlaceholder: context.localize('label_country'),
+          //     stateSearchPlaceholder: context.localize('label_city'),
+          //     citySearchPlaceholder: context.localize('label_district'),
+          //     countryDropdownLabel: context.localize('place_holder_country'),
+          //     stateDropdownLabel: context.localize('place_holder_city'),
+          //     cityDropdownLabel: context.localize('place_holder_district'),
+          //     countryFilter: [CscCountry.Vietnam, CscCountry.United_States],
+          //     dropdownItemStyle: GoogleFonts.nunitoSans(
+          //       fontSize: 16,
+          //       fontWeight: FontWeight.w600,
+          //       color: AppColor.black,
+          //     ),
+          //     onCountryChanged: (value) {
+          //       setState(() {
+          //         countryValue = value;
+          //       });
+          //     },
+          //     onStateChanged: (value) {
+          //       setState(() {
+          //         cityValue = value;
+          //       });
+          //     },
+          //     onCityChanged: (value) {
+          //       setState(() {
+          //         districtValue = value;
+          //       });
+          //     },
+          //   ),
+          // ),
           Padding(
             padding:
                 const EdgeInsets.only(top: 10, left: 20, right: 20, bottom: 10),
-            child: CSCPicker(
-              layout: Layout.vertical,
-              showCities: true,
-              showStates: true,
-              flagState: CountryFlag.DISABLE,
-              countrySearchPlaceholder: context.localize('label_country'),
-              stateSearchPlaceholder: context.localize('label_city'),
-              citySearchPlaceholder: context.localize('label_district'),
-              countryDropdownLabel: context.localize('place_holder_country'),
-              stateDropdownLabel: context.localize('place_holder_city'),
-              cityDropdownLabel: context.localize('place_holder_district'),
-              countryFilter: [CscCountry.Vietnam, CscCountry.United_States],
-              dropdownItemStyle: GoogleFonts.nunitoSans(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: AppColor.black,
-              ),
-              onCountryChanged: (value) {
-                setState(() {
-                  countryValue = value;
-                });
-              },
-              onStateChanged: (value) {
-                setState(() {
-                  cityValue = value;
-                });
-              },
-              onCityChanged: (value) {
-                setState(() {
-                  districtValue = value;
-                });
-              },
+            child: AppTextFormField(
+              isNumber: false,
+              controller: countryController,
+              labelText: context.localize('label_country'),
+              hintText: context.localize('place_holder_country'),
+            ),
+          ),
+          Padding(
+            padding:
+                const EdgeInsets.only(top: 10, left: 20, right: 20, bottom: 10),
+            child: AppTextFormField(
+              isNumber: false,
+              controller: cityController,
+              labelText: context.localize('label_city'),
+              hintText: context.localize('place_holder_city'),
+            ),
+          ),
+          Padding(
+            padding:
+                const EdgeInsets.only(top: 10, left: 20, right: 20, bottom: 10),
+            child: AppTextFormField(
+              isNumber: false,
+              controller: districtController,
+              labelText: context.localize('label_district'),
+              hintText: context.localize('place_holder_district'),
             ),
           ),
           Padding(
@@ -145,7 +180,22 @@ class _AddShippingAddressState extends State<AddShipingAddress> {
                     Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => PickLocation()));
+                            builder: (context) => PickLocation(
+                                  onSubmit: (address) {
+                                    countryController.text =
+                                        address.country ?? '';
+                                    cityController.text = address.city ?? '';
+                                    districtController.text =
+                                        address.district ?? '';
+                                    streetController.text =
+                                        address.street ?? '';
+                                    zipcodeController.text =
+                                        address.zipCode ?? '';
+                                    placeController.text = address.place ?? '';
+                                    latitude = address.latitude;
+                                    longitude = address.longitude;
+                                  },
+                                )));
                   })),
           Padding(
               padding: const EdgeInsets.only(left: 20, right: 20, bottom: 35),
@@ -158,31 +208,31 @@ class _AddShippingAddressState extends State<AddShipingAddress> {
                   size: Size(double.infinity, 60),
                   color: AppColor.black,
                   onPressed: () {
-                    if (_formKey.currentState!.validate() &&
-                        cityValue != null &&
-                        districtValue != null &&
-                        countryValue != null) {
+                    if (_formKey.currentState!.validate()) {
                       final newAddress = Address(
                         name: nameController.text,
                         street: streetController.text,
-                        city: cityValue!,
+                        city: cityController.text,
                         place: placeController.text,
-                        district: districtValue!,
+                        district: districtController.text,
                         zipCode: zipcodeController.text,
-                        country: countryValue!,
+                        country: countryController.text,
+                        latitude: latitude,
+                        longitude: longitude,
                       );
                       widget.onTap.call(newAddress);
                       Navigator.pop(context);
-                    } else {
-                      if (cityValue != null &&
-                          districtValue != null &&
-                          countryValue != null) {
-                        setState(() {
-                          errorMessage =
-                              context.localize('error_message_empty_address');
-                        });
-                      }
                     }
+                    // else {
+                    //   if (cityValue != null &&
+                    //       districtValue != null &&
+                    //       countryValue != null) {
+                    //     setState(() {
+                    //       errorMessage =
+                    //           context.localize('error_message_empty_address');
+                    //     });
+                    //   }
+                    // }
                   })),
         ]),
       ),
