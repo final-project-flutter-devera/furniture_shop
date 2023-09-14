@@ -24,9 +24,16 @@ class UserProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<User> getUser() async {
+  Future<User> getCurrentUser() async {
     User user;
     user = await _userRepository.getUser(getID());
+    notifyListeners();
+    return user;
+  }
+
+  Future<User> getUser(String userID) async {
+    User user;
+    user = await _userRepository.getUser(userID);
     notifyListeners();
     return user;
   }

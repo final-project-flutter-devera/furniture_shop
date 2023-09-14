@@ -1,5 +1,5 @@
 import 'package:furniture_shop/Objects/rating_and_review.dart';
-import 'package:furniture_shop/data/data_source/remote/rating_and_review_firestore.dart';
+import 'package:furniture_shop/data/data_source/remote/rating_and_review_firestore_service.dart';
 import 'package:furniture_shop/data/repository/rating_and_review_repository.dart';
 
 class RatingAndReviewRepositoryImpl implements RatingAndReviewRepository {

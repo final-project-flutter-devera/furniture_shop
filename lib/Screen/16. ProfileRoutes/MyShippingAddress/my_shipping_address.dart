@@ -38,7 +38,8 @@ class _MyShippingAddressState extends State<MyShippingAddress> {
   }
 
   _getAddress() async {
-    myAddress = await context.read<UserProvider>().getUser().then((value) {
+    myAddress =
+        await context.read<UserProvider>().getCurrentUser().then((value) {
       return value.shippingAddress;
     });
     setState(() {

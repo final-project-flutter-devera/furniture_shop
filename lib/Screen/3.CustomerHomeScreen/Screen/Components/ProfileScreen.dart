@@ -49,7 +49,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   _getUserData() async {
-    user = await context.read<UserProvider>().getUser();
+    user = await context.read<UserProvider>().getCurrentUser();
     setState(() {
       _isLoading = false;
     });
